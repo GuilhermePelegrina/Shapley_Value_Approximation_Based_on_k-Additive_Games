@@ -34,11 +34,8 @@ games_wine_classification_random_forest
 dataset = pd.read_csv('games_titanic_classification_random_forest.csv')
 values = np.array(dataset.value)
 
-print(dataset)
-
 # create a game object
 game = Game(dataset)
-print(game.get_value([2]))
 
 # Defining the number of Mote Carlo simulations
 nSimul = 1
