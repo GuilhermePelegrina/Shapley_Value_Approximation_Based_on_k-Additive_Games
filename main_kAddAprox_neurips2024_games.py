@@ -22,8 +22,7 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score
 import math
 import mod_global_kadd_shapley
-
-
+from game import Game
 
 '''
 Load games already defined - Choose one of them
@@ -34,6 +33,12 @@ games_wine_classification_random_forest
 '''
 dataset = pd.read_csv('games_titanic_classification_random_forest.csv')
 values = np.array(dataset.value)
+
+print(dataset)
+
+# create a game object
+game = Game(dataset)
+print(game.get_value([2]))
 
 # Defining the number of Mote Carlo simulations
 nSimul = 1
