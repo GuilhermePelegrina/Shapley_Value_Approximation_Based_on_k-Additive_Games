@@ -10,7 +10,8 @@ class PermuationSampling:
 
             Args:
                 game: The game that maps each coalition to a worth.
-                budget: The number of times coalitions of the game can be evaluated
+                budget: The number of times coalitions of the game can be evaluated.
+                steps: List of points in time (monotonically increasing, between 1 and budget), the Shapley estimates at each step are stored.
 
             Returns:
                 The estimated Shapley values for each budget step.
