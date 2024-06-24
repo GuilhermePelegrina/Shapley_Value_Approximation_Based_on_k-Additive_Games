@@ -49,7 +49,7 @@ class StratifiedSampling:
 
                         # check for budget step
                         if step < len(steps) and steps[step] == budget - remaining_budget:
-                            all_estimates[step] = self.aggregate_strata(sums, counts)
+                            all_estimates[step] = self.__aggregate_strata(sums, counts)
                             step += 1
 
                         # check if enough budget is available to evaluate the second part of the marginal contribution
@@ -69,7 +69,7 @@ class StratifiedSampling:
         return all_estimates
 
 
-    def aggregate_strata(self, sums, counts):
+    def __aggregate_strata(self, sums, counts):
         # aggregates the strata estimates to Shapley estimates accounting for strata with zero samples
         strata = np.divide(sums, counts, where=counts != 0)
         result = np.sum(strata, axis=1)
