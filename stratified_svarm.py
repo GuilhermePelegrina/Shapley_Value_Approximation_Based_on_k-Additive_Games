@@ -99,7 +99,7 @@ class StratifiedSVARM:
                     self.negative_counts[i][self.n-1] = 1
                     # positive n-2 strata
                     for j in players:
-                        self.positive_strata[j][self.n-2] = (self.positive_strata[j][self.n-2] * self.positive_counts[j][self.n-2] + v_minus) / (self.positive_counts[j][n-2] + 1)
+                        self.positive_strata[j][self.n-2] = (self.positive_strata[j][self.n-2] * self.positive_counts[j][self.n-2] + v_minus) / (self.positive_counts[j][self.n-2] + 1)
                         self.positive_counts[j][self.n-2] += 1
                     self.__check_steps()
 
