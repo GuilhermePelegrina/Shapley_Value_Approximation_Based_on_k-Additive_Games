@@ -11,11 +11,10 @@ game = Game(dataset)
 budget = 100000
 steps = [50000,100000]
 
-permutation_sampling = PermutationSampling()
-stratified_sampling = StratifiedSampling()
+permutation_sampling = PermutationSampling(game, budget, steps)
+stratified_sampling = StratifiedSampling(game, budget, steps)
 
-permutation_estimates = permutation_sampling.get_estimates(game, budget, steps)
-stratified_estimates = stratified_sampling.get_estimates(game, budget, steps)
+permutation_estimates = permutation_sampling.get_estimates()
+stratified_estimates = stratified_sampling.get_estimates()
 print(permutation_estimates)
 print(stratified_estimates)
-
