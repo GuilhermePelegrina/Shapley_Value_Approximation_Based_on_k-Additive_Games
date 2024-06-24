@@ -1,6 +1,6 @@
 import numpy as np
 
-class PermuationSampling:
+class PermutationSampling:
     """This class implements ApproShapley (Castro et al., 2009):
     Permutations of the player set are sampled and the marginal contribution of neighboring players within a permutation extracted to update a mean estimate of the Shapley values.
     """
