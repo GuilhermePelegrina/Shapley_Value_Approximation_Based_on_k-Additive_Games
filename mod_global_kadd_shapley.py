@@ -102,7 +102,7 @@ def solver_shapley(matrix_transf,samples,ii,W,values_aux,inter_true,nAttr):
     
     return shapley, error
 
-def kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matrix_transf_k2,matrix_transf_k3,matrix_transf_k4,matrix_transf_k5,nAttr,samples,inter_true,error_all_k2,error_all_k3,error_all_k1,error_all_k4,error_all_k5,count2,count3,count4,count5):
+def kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matrix_transf_k2,matrix_transf_k3,matrix_transf_k4,nAttr,samples,inter_true,error_all_k2,error_all_k3,error_all_k1,error_all_k4,count2,count3,count4,index_k1,index_k2,index_k3,index_k4):
     
     values_aux = values_samples[0:samples_size[ii]]
     
@@ -112,25 +112,24 @@ def kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matri
     
     shapley_k1, error_k1 = solver_shapley(matrix_transf_k1,samples,samples_size[ii],W,values_aux,inter_true,nAttr)
     error_all_k1[jj,ii] = error_k1
+    index_k1.append(samples_size[ii])
         
     if samples_size[ii] >= nParam_kAdd(2,nAttr)+20:
         shapley_k2, error_k2 = solver_shapley(matrix_transf_k2,samples,samples_size[ii],W,values_aux,inter_true,nAttr)
         error_all_k2[jj,count2] = error_k2
+        index_k2.append(samples_size[ii])
         count2 += 1
         
     if samples_size[ii] >= nParam_kAdd(3,nAttr)+30:
         shapley_k3, error_k3 = solver_shapley(matrix_transf_k3,samples,samples_size[ii],W,values_aux,inter_true,nAttr)
         error_all_k3[jj,count3] = error_k3
+        index_k3.append(samples_size[ii])
         count3 += 1
     
     if samples_size[ii] >= nParam_kAdd(4,nAttr)+40:   
         shapley_k4, error_k4 = solver_shapley(matrix_transf_k4,samples,samples_size[ii],W,values_aux,inter_true,nAttr)
         error_all_k4[jj,count4] = error_k4
+        index_k4.append(samples_size[ii])
         count4 += 1
-    
-    if samples_size[ii] >= nParam_kAdd(5,nAttr)+50:
-        shapley_k5, error_k5 = solver_shapley(matrix_transf_k5,samples,samples_size[ii],W,values_aux,inter_true,nAttr)
-        error_all_k5[jj,count5] = error_k5
-        count5 += 1
-        
-    return error_all_k1, error_all_k2, error_all_k3, error_all_k4, error_all_k5, count2, count3, count4, count5
+            
+    return error_all_k1, error_all_k2, error_all_k3, error_all_k4, count2, count3, count4
