@@ -3,14 +3,19 @@ import pandas as pd
 
 from game import Game
 from permutation_sampling import PermutationSampling
+from stratified_sampling import StratifiedSampling
 
 dataset = pd.read_csv('games_titanic_classification_random_forest.csv')
 game = Game(dataset)
 
-budget = 1000
-steps = [100,200,300,400,500,600,700,800,900,1000]
+budget = 100000
+steps = [50000,100000]
 
 permutation_sampling = PermutationSampling()
-all_estimates = permutation_sampling.get_estimates(game, budget, steps)
+stratified_sampling = StratifiedSampling()
 
-print(all_estimates)
+permutation_estimates = permutation_sampling.get_estimates(game, budget, steps)
+stratified_estimates = stratified_sampling.get_estimates(game, budget, steps)
+print(permutation_estimates)
+print(stratified_estimates)
+

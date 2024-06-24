@@ -43,8 +43,8 @@ class StratifiedSampling:
                         # generate and evaluate first coalition
                         available_players = list(range(nAttr))
                         available_players.remove(player)
-                        first_coalition = random.sample(available_players, size)
-                        first_value = game.get_value(first_coalition)
+                        coalition = random.sample(available_players, size)
+                        first_value = game.get_value(coalition)
                         remaining_budget -= 1
 
                         # check for budget step
@@ -55,8 +55,8 @@ class StratifiedSampling:
                         # check if enough budget is available to evaluate the second part of the marginal contribution
                         if remaining_budget > 0:
                             # evaluate second coalition and compute marginal contribution
-                            second_coalition = first_coalition.append(player)
-                            second_value = game.get_value(second_coalition)
+                            coalition.append(player)
+                            second_value = game.get_value(coalition)
                             remaining_budget -= 1
                             marginal = second_value - first_value
                             sums[player][size] += marginal
