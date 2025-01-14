@@ -82,7 +82,7 @@ def sampling_generator(nAttr):
     probab_aux = probab/sum(probab)
     for ii in range(len(probab)):
         sampling[ii] = np.random.choice(np.arange(len(probab))+1, size=1, replace=False, p=probab_aux)
-        probab[int(sampling[ii]-1)] = 0
+        #probab[int(sampling[ii]-1)] = 0
         probab_aux = probab/sum(probab)
         
     sampling = sampling.astype(int)
@@ -95,13 +95,13 @@ def solver_shapley(matrix_transf,samples,ii,W,values_aux,inter_true,nAttr):
     A = W @ samples_select_matrix_aux
     b = W @ values_aux
     
-    '''    
+     
     # Solve LS problem
     x_sol = np.linalg.lstsq(A, b, rcond=None)[0]
     shapley = x_sol[1:nAttr+1]    
     #inter = x_sol[1:int(nAttr*(nAttr+1)/2+1)]
-    '''
     
+    '''
     # Solve Constrained LS problem
     A2 = A[2:,:]
     b2 = b[2:]
@@ -120,8 +120,10 @@ def solver_shapley(matrix_transf,samples,ii,W,values_aux,inter_true,nAttr):
     
     shapley = np.squeeze(np.array(result['x']))
     shapley = shapley[1:nAttr+1]
-
+    '''
     error = np.sum((shapley - inter_true[1:nAttr+1])**2)
+    
+    #print(shapley)
     
     return shapley, error
 
