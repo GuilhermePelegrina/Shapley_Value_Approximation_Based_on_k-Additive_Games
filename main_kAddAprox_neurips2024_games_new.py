@@ -43,6 +43,8 @@ games_image_cat
 dataset = pd.read_csv('games_diabetes_regression_random_forest.csv')
 values = np.array(dataset.value)
 
+#values = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.8, 0.9, 1])
+
 cardinal = []
 cardinal.append(0)
 for ii in range(1,len(values)-1):
@@ -65,10 +67,16 @@ all_coal = mod_global_kadd_shapley.coalition_shap_kadd(nAttr,nAttr)
 inter_true = np.linalg.inv(matrix_transf_all) @ values
 
 # Creating the error matrices for a set of k-additive models
-error_all_k1 = np.zeros((nSimul,2**nAttr - nAttr - 10))
-error_all_k2 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(2,nAttr) - 20))
-error_all_k3 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(3,nAttr) - 30))
-error_all_k4 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(4,nAttr) - 40))
+#error_all_k1 = np.zeros((nSimul,2**nAttr - nAttr - 10))
+#error_all_k2 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(2,nAttr) - 20))
+#error_all_k3 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(3,nAttr) - 30))
+#error_all_k4 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(4,nAttr) - 40))
+
+error_all_k1 = np.zeros((nSimul,2**nAttr - nAttr))
+error_all_k2 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(2,nAttr)))
+error_all_k3 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(3,nAttr)))
+error_all_k4 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(4,nAttr)))
+
 
 samples = np.zeros((nSimul,2**nAttr))
 
@@ -97,6 +105,8 @@ for jj in range(nSimul):
     #samples_size = np.arange(nAttr+10,2**nAttr)
     samples_size = np.arange(nAttr+10,(1/2)*(2**nAttr)) # Define the budget
     samples_size = np.concatenate((np.arange(nAttr+10,100,1),np.arange(100,500,10),np.arange(500,2**nAttr,100)),axis=0) # Define the budget
+    
+    #samples_size = np.arange(nAttr,2**nAttr)
     
     index_ii = 0
     
