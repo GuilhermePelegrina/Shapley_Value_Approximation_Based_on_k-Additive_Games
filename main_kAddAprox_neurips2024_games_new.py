@@ -105,8 +105,9 @@ for jj in range(nSimul):
     #samples_size = np.arange(nAttr+10,2**nAttr)
     samples_size = np.arange(nAttr+10,(1/2)*(2**nAttr)) # Define the budget
     samples_size = np.concatenate((np.arange(nAttr+10,100,1),np.arange(100,500,10),np.arange(500,2**nAttr,100)),axis=0) # Define the budget
+    samples_size = np.append(samples_size,2**nAttr-1)
     
-    #samples_size = np.arange(nAttr,2**nAttr)
+    #samples_size = np.arange(nAttr,2**nAttr)+1
     
     index_ii = 0
     
