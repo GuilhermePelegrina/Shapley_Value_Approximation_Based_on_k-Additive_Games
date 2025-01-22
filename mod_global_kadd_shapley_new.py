@@ -9,10 +9,7 @@ Created on Tue Jun 11 20:14:58 2024
 import numpy as np
 from math import comb
 from scipy.special import bernoulli
-import cvxpy as cp
 from itertools import chain, combinations
-from scipy.optimize import fmin_slsqp
-from cvxopt import matrix, solvers
 
 import scipy.special
 
@@ -74,19 +71,36 @@ def shapley_kernel(M,s):
 
 def sampling_generator(nAttr):
     
-    probab = np.ones((nAttr,))*shapley_kernel(nAttr,1)
-    for ii in range(2,nAttr):
-        probab = np.concatenate((probab,np.ones((comb(nAttr,ii),))*shapley_kernel(nAttr,ii)),axis=0)
     
-    sampling = np.zeros((len(probab),))
-    probab_aux = probab/sum(probab)
-    for ii in range(len(probab)):
-        #sampling[ii] = np.random.choice(np.arange(len(probab))+1, size=1, replace=False, p=probab_aux)
-        sampling[ii] = np.random.choice(np.arange(len(probab))+1, size=1, replace=False)
-        probab[int(sampling[ii]-1)] = 0
-        probab_aux = probab/sum(probab)
-        
+    
+    '''
+    # Sampling with probabilities
+    
+    probab = np.ones((nAttr,))*shapley_kernel(nAttr,1)
+    for kk in range(2,nAttr):
+        probab = np.concatenate((probab,np.ones((comb(nAttr,kk),))*shapley_kernel(nAttr,kk)),axis=0)
+    
+    probab = probab/sum(probab)
+    sampling = np.random.choice(np.arange(len(probab))+1, size=2**nAttr-2, replace=False, p=probab)
+    '''
+    
+    #'''
+    # Sampling with probabilities (Patrick theorem)
+    
+    probab = np.ones((nAttr,))
+    for kk in range(2,nAttr):
+        probab = np.concatenate((probab,np.ones((comb(nAttr,kk),))*(1/(comb(nAttr-2, kk-1)))),axis=0)
+    
+    probab = probab/sum(probab)
+    sampling = np.random.choice(np.arange(len(probab))+1, size=2**nAttr-2, replace=False, p=probab)
+    
+    #'''
+    
+    '''
+    # Sampling without probabilities
+    sampling = np.random.choice(np.arange(1,2**nAttr-1), size=2**nAttr-2, replace=False)
     sampling = sampling.astype(int)
+    '''
     
     return sampling
 
@@ -139,11 +153,13 @@ def kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matri
     W[0,0] = 10**6
     W[1,1] = 10**6
     
+    #'''
     # Modification (Patrick theorem)
     for kk in range(2,samples_size[ii]):
-    #for kk in range(samples_size[ii]):
         W[kk,kk] = 1/(comb(nAttr-2, cardinal[int(samples[kk])]-1))
-    #
+    #'''
+
+    shapley_k1, shapley_k2, shapley_k3, shapley_k4 = [], [], [], []
     
     shapley_k1, error_k1 = solver_shapley(matrix_transf_k1,samples,samples_size[ii],W,values_aux,inter_true,nAttr)
     error_all_k1[jj,ii] = error_k1
@@ -167,7 +183,7 @@ def kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matri
         index_k4.append(samples_size[ii])
         count4 += 1
             
-    return error_all_k1, error_all_k2, error_all_k3, error_all_k4, count2, count3, count4
+    return error_all_k1, error_all_k2, error_all_k3, error_all_k4, count2, count3, count4, shapley_k1, shapley_k2, shapley_k3, shapley_k4
 
 def kadd_global_shapley_estr(values_samples,samples_size,matrix_transf_k3,nAttr,samples,inter_true):
     
