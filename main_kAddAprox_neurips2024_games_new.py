@@ -2,27 +2,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.neural_network import MLPRegressor
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neural_network import MLPClassifier
-from math import comb
-from scipy.special import bernoulli
 
-from itertools import chain, combinations
-import itertools
-
-import scipy.special
-import random
-import sklearn.datasets 
-import xgboost
-from sklearn.preprocessing import OneHotEncoder
-import seaborn as sns
-from sklearn.metrics import accuracy_score
 import math
 import mod_global_kadd_shapley
-import permutation_sampling
 from game import Game
 
 
@@ -40,10 +22,8 @@ games_BigFive_unsupervised
 games_nlp_sentiment
 games_image_cat
 '''
-dataset = pd.read_csv('games_diabetes_regression_random_forest.csv')
+dataset = pd.read_csv('games_image_cat.csv')
 values = np.array(dataset.value)
-
-#values = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.8, 0.9, 1])
 
 cardinal = []
 cardinal.append(0)
@@ -52,7 +32,7 @@ for ii in range(1,len(values)-1):
 cardinal.append(int(math.log(len(values),2)))
 
 # Defining the number of Mote Carlo simulations
-nSimul = 20
+nSimul = 100
 
 # Extracting the number of features
 nAttr = int(math.log(len(values),2))
@@ -67,18 +47,18 @@ all_coal = mod_global_kadd_shapley.coalition_shap_kadd(nAttr,nAttr)
 inter_true = np.linalg.inv(matrix_transf_all) @ values
 
 # Creating the error matrices for a set of k-additive models
-#error_all_k1 = np.zeros((nSimul,2**nAttr - nAttr - 10))
-#error_all_k2 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(2,nAttr) - 20))
-#error_all_k3 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(3,nAttr) - 30))
-#error_all_k4 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(4,nAttr) - 40))
-
-error_all_k1 = np.zeros((nSimul,2**nAttr - nAttr))
-error_all_k2 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(2,nAttr)))
-error_all_k3 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(3,nAttr)))
-error_all_k4 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(4,nAttr)))
+error_all_k1 = np.zeros((nSimul,2**nAttr - nAttr - 10))
+error_all_k2 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(2,nAttr) - 20))
+error_all_k3 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(3,nAttr) - 30))
+error_all_k4 = np.zeros((nSimul,2**nAttr - mod_global_kadd_shapley.nParam_kAdd(4,nAttr) - 40))
 
 
 samples = np.zeros((nSimul,2**nAttr))
+
+shapley_all_k1 = []
+shapley_all_k2 = []
+shapley_all_k3 = []
+shapley_all_k4 = []
 
 for jj in range(nSimul):
 
@@ -107,8 +87,6 @@ for jj in range(nSimul):
     samples_size = np.concatenate((np.arange(nAttr+10,100,1),np.arange(100,500,10),np.arange(500,2**nAttr,100)),axis=0) # Define the budget
     samples_size = np.append(samples_size,2**nAttr-1)
     
-    #samples_size = np.arange(nAttr,2**nAttr)+1
-    
     index_ii = 0
     
     index_k1 = []
@@ -121,7 +99,16 @@ for jj in range(nSimul):
     
     for ii in range(len(samples_size)):
         
-        error_all_k1, error_all_k2, error_all_k3, error_all_k4, count2, count3, count4 = mod_global_kadd_shapley.kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matrix_transf_k2,matrix_transf_k3,matrix_transf_k4,nAttr,samples[jj,:],inter_true,error_all_k2,error_all_k3,error_all_k1,error_all_k4,count2,count3,count4,index_k1,index_k2,index_k3,index_k4,cardinal)
+        error_all_k1, error_all_k2, error_all_k3, error_all_k4, count2, count3, count4, shapley_k1, shapley_k2, shapley_k3, shapley_k4 = mod_global_kadd_shapley.kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matrix_transf_k2,matrix_transf_k3,matrix_transf_k4,nAttr,samples[jj,:],inter_true,error_all_k2,error_all_k3,error_all_k1,error_all_k4,count2,count3,count4,index_k1,index_k2,index_k3,index_k4,cardinal)
+        
+        shapley_all_k1.append(shapley_k1)
+        
+        if len(shapley_k2) > 0:
+            shapley_all_k2.append(shapley_k2)
+        if len(shapley_k3) > 0:
+            shapley_all_k3.append(shapley_k3)
+        if len(shapley_k4) > 0:
+            shapley_all_k4.append(shapley_k4)
         
         print(ii,jj)
     
@@ -135,12 +122,12 @@ plt.plot(index_k1, np.mean(error_all_k1,0), label='$k = 1$')
 plt.plot(index_k2, np.mean(error_all_k2,0), label='$k = 2$')
 plt.plot(index_k3, np.mean(error_all_k3,0), label='$k = 3$')
 plt.plot(index_k4, np.mean(error_all_k4,0), label='$k = 4$')
-plt.ylim([0,0.01])
+#plt.ylim([0,0.01])
 plt.xlabel('# of value function evaluations ($T$)', fontsize=14)
 plt.ylabel('Average MSE', fontsize=14)
 plt.legend(fontsize=12)  
 '''
 
-data_save = [samples,error_all_k1, error_all_k2, error_all_k3, error_all_k4, index_k1, index_k2, index_k3, index_k4]
+data_save = [samples,error_all_k1, error_all_k2, error_all_k3, error_all_k4, index_k1, index_k2, index_k3, index_k4, shapley_k1, shapley_k2, shapley_k3, shapley_k4]
 np.save('results_kAddApprox_test.npy', data_save, allow_pickle=True)
-#samples,error_all_k1, error_all_k2, error_all_k3, error_all_k4, index_k1, index_k2, index_k3, index_k4 = np.load('results_kAddApprox_wine_rf.npy', allow_pickle=True)
+#samples,error_all_k1, error_all_k2, error_all_k3, error_all_k4, index_k1, index_k2, index_k3, index_k4, shapley_k1, shapley_k2, shapley_k3, shapley_k4 = np.load('results_kAddApprox_wine_rf.npy', allow_pickle=True)
