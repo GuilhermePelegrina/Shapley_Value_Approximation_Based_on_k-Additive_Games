@@ -32,7 +32,7 @@ for ii in range(1,len(values)-1):
 cardinal.append(int(math.log(len(values),2)))
 
 # Defining the number of Mote Carlo simulations
-nSimul = 100
+nSimul = 25
 
 # Extracting the number of features
 nAttr = int(math.log(len(values),2))
