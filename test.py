@@ -13,11 +13,13 @@ game = Game(dataset)
 budget = 500
 steps = [100,200,500]
 
+# define algorithms
 permutation_sampling = PermutationSampling(game, budget, steps)
 stratified_sampling = StratifiedSampling(game, budget, steps)
 stratified_svarm = StratifiedSVARM(game, budget, steps)
 kernel_shap = KernelSHAP(game, budget, steps)
 
+# retrieve estimates
 permutation_estimates = permutation_sampling.get_estimates()
 stratified_estimates = stratified_sampling.get_estimates()
 svarm_estimates = stratified_svarm.get_estimates()
