@@ -80,7 +80,7 @@ def sampling_generator(nAttr):
     '''
     
     #'''
-    # Sampling with probabilities (Patrick theorem)
+    # Sampling with probabilities
     
     probab = np.ones((nAttr,))
     for kk in range(2,nAttr):
@@ -149,7 +149,7 @@ def kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matri
     W[1,1] = 10**6
     
     #'''
-    # Modification (Patrick theorem)
+    # Modification
     for kk in range(2,samples_size[ii]):
         W[kk,kk] = 1/(comb(nAttr-2, cardinal[int(samples[kk])]-1))
     #'''
