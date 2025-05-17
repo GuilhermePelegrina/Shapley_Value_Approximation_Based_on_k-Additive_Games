@@ -22,7 +22,7 @@ games_BigFive_unsupervised
 games_nlp_sentiment
 games_image_cat
 '''
-dataset = pd.read_csv('games_image_cat.csv')
+dataset = pd.read_csv('games_BreastCancer_unsupervised.csv')
 values = np.array(dataset.value)
 
 cardinal = []
@@ -31,11 +31,12 @@ for ii in range(1,len(values)-1):
     cardinal.append(dataset.coalition[ii].count('|')+1)
 cardinal.append(int(math.log(len(values),2)))
 
-# Defining the number of Mote Carlo simulations
-nSimul = 25
-
 # Extracting the number of features
 nAttr = int(math.log(len(values),2))
+
+# Defining the number of Monte Carlo simulations and budget
+nSimul = 10
+budget = nAttr*(nAttr+1)
 
 # Creating the trasnformation matrix from shapley indices to game
 matrix_transf_all = mod_global_kadd_shapley.tr_shap2game(nAttr, nAttr)
@@ -66,7 +67,7 @@ for jj in range(nSimul):
     samples[jj,0] = 0
     samples[jj,1] = 2**nAttr-1
     #samples[jj,2:] = random.sample(range(1, 2**nAttr-1), 2**nAttr-2)
-    samples[jj,2:] = mod_global_kadd_shapley.sampling_generator(nAttr)
+    samples[jj,2:] = mod_global_kadd_shapley.sampling_generator(nAttr, budget)
     
     values_samples = np.zeros((2**nAttr,))
     values_samples[0] = values[0]
@@ -74,6 +75,7 @@ for jj in range(nSimul):
     values_samples[2:] = values[samples[jj,2:].astype(int)]
     
     samples_coal = all_coal[samples[jj,:].astype(int),:]
+    
     
     matrix_transf_k1 = matrix_transf_all[:,0:mod_global_kadd_shapley.nParam_kAdd(1,nAttr)]
     matrix_transf_k2 = matrix_transf_all[:,0:mod_global_kadd_shapley.nParam_kAdd(2,nAttr)]
@@ -83,7 +85,7 @@ for jj in range(nSimul):
     # Selecting the number of samples (all of them or according to a budget)
     
     #samples_size = np.arange(nAttr+10,2**nAttr)
-    samples_size = np.arange(nAttr+10,(1/2)*(2**nAttr)) # Define the budget
+    #samples_size = np.arange(nAttr+10,(1/2)*(2**nAttr)) # Define the budget
     samples_size = np.concatenate((np.arange(nAttr+10,100,1),np.arange(100,500,10),np.arange(500,2**nAttr,100)),axis=0) # Define the budget
     samples_size = np.append(samples_size,2**nAttr-1)
     
@@ -98,6 +100,15 @@ for jj in range(nSimul):
     print(jj)
     
     for ii in range(len(samples_size)):
+        
+        '''
+        samples[jj,:samples_size[ii]] = mod_global_kadd_shapley.select_coalition_indices(nAttr, samples_size[ii])
+        
+        values_samples = np.zeros((2**nAttr,))
+        values_samples[:samples_size[ii]] = values[samples[jj,:samples_size[ii]].astype(int)]
+        
+        samples_coal = all_coal[samples[jj,:].astype(int),:]
+        '''
         
         error_all_k1, error_all_k2, error_all_k3, error_all_k4, count2, count3, count4, shapley_k1, shapley_k2, shapley_k3, shapley_k4 = mod_global_kadd_shapley.kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matrix_transf_k2,matrix_transf_k3,matrix_transf_k4,nAttr,samples[jj,:],inter_true,error_all_k2,error_all_k3,error_all_k1,error_all_k4,count2,count3,count4,index_k1,index_k2,index_k3,index_k4,cardinal)
         
@@ -122,10 +133,21 @@ plt.plot(index_k1, np.mean(error_all_k1,0), label='$k = 1$')
 plt.plot(index_k2, np.mean(error_all_k2,0), label='$k = 2$')
 plt.plot(index_k3, np.mean(error_all_k3,0), label='$k = 3$')
 plt.plot(index_k4, np.mean(error_all_k4,0), label='$k = 4$')
-#plt.ylim([0,0.01])
+plt.ylim([0,0.01])
 plt.xlabel('# of value function evaluations ($T$)', fontsize=14)
 plt.ylabel('Average MSE', fontsize=14)
 plt.legend(fontsize=12)  
+plt.show()
+
+plt.plot(index_k1, np.mean(error_all_k1,0), label='$k = 1$')
+plt.plot(index_k2, np.mean(error_all_k2,0), label='$k = 2$')
+plt.plot(index_k3, np.mean(error_all_k3,0), label='$k = 3$')
+plt.plot(index_k4, np.mean(error_all_k4,0), label='$k = 4$')
+plt.xlabel('# of value function evaluations ($T$)', fontsize=14)
+plt.ylabel('Average MSE', fontsize=14)
+plt.yscale('log')
+plt.legend(fontsize=12)  
+plt.show()
 '''
 
 data_save = [samples,error_all_k1, error_all_k2, error_all_k3, error_all_k4, index_k1, index_k2, index_k3, index_k4, shapley_k1, shapley_k2, shapley_k3, shapley_k4]
