@@ -1,10 +1,19 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jun 11 20:14:58 2024
 
+@author: guipe
+"""
 
 
 import numpy as np
 from math import comb
 from scipy.special import bernoulli
 from itertools import chain, combinations
+import random
+import itertools
+import random
+import math
 
 import scipy.special
 
@@ -64,8 +73,7 @@ def shapley_kernel(M,s):
         return 100000
     return (M-1)/(scipy.special.binom(M,s)*s*(M-s))
 
-def sampling_generator(nAttr):
-    
+def sampling_generator(nAttr, budget):
     
     
     '''
@@ -79,8 +87,23 @@ def sampling_generator(nAttr):
     sampling = np.random.choice(np.arange(len(probab))+1, size=2**nAttr-2, replace=False, p=probab)
     '''
     
-    #'''
-    # Sampling with probabilities
+    '''
+    # Sampling with probabilities (Patrick theorem and sampling the complement)
+    sampling = np.zeros((2**nAttr-2,))
+    probab = np.ones((nAttr,))
+    for kk in range(2,nAttr):
+        probab = np.concatenate((probab,np.ones((comb(nAttr,kk),))*(1/(comb(nAttr-2, kk-1)))),axis=0)
+    
+    probab = probab/sum(probab)
+    for kk in range(int((2**nAttr-2)/2)):
+        probab = probab/sum(probab)
+        sampling[2*kk] = np.random.choice(np.arange(len(probab))+1, size=1, replace=False, p=probab)
+        sampling[2*kk+1] = 2**nAttr-1-sampling[2*kk]
+        probab[int(sampling[2*kk]-1)], probab[int(sampling[2*kk+1]-1)] = 0, 0
+    '''
+    
+    '''
+    # Sampling with probabilities (Patrick theorem)
     
     probab = np.ones((nAttr,))
     for kk in range(2,nAttr):
@@ -88,14 +111,20 @@ def sampling_generator(nAttr):
     
     probab = probab/sum(probab)
     sampling = np.random.choice(np.arange(len(probab))+1, size=2**nAttr-2, replace=False, p=probab)
+    '''
     
-    #'''
     
     '''
     # Sampling without probabilities
     sampling = np.random.choice(np.arange(1,2**nAttr-1), size=2**nAttr-2, replace=False)
     sampling = sampling.astype(int)
     '''
+    
+    
+    # Sampling with border trick
+    #sampling = ordered_coalition_indices(nAttr)
+    sampling = select_indices_with_budget(nAttr, budget, seed=None)
+    
     
     return sampling
 
@@ -105,7 +134,7 @@ def solver_shapley(matrix_transf,samples,ii,W,values_aux,inter_true,nAttr):
     A = W @ samples_select_matrix_aux
     b = W @ values_aux
     
-     
+    
     # Solve LS problem
     x_sol = np.linalg.lstsq(A, b, rcond=None)[0]
     shapley = x_sol[1:nAttr+1]    
@@ -149,7 +178,7 @@ def kadd_global_shapley(values_samples,samples_size,ii,jj,matrix_transf_k1,matri
     W[1,1] = 10**6
     
     #'''
-    # Modification
+    # Modification (Patrick theorem)
     for kk in range(2,samples_size[ii]):
         W[kk,kk] = 1/(comb(nAttr-2, cardinal[int(samples[kk])]-1))
     #'''
@@ -194,3 +223,113 @@ def kadd_global_shapley_estr(values_samples,samples_size,matrix_transf_k3,nAttr,
             
     return shapley_k3
 
+
+
+def select_coalition_indices(nAttr, budget, seed=None):
+    if seed is not None:
+        random.seed(seed)
+
+    # Número total de coalizões no power set
+    total_coalitions = 2 ** nAttr
+    budget = min(budget, total_coalitions)
+
+    # Número de seleções determinísticas e aleatórias
+    num_deterministic = budget // 2
+    num_random = budget - num_deterministic
+
+    # Mapeia cardinalidades para listas de índices
+    cardinality_to_indices = {k: [] for k in range(nAttr + 1)}
+    idx = 0
+    for k in range(nAttr + 1):
+        for _ in itertools.combinations(range(nAttr), k):
+            cardinality_to_indices[k].append(idx)
+            idx += 1
+
+    # Ordem alternada: 0, n, 1, n-1, 2, n-2, ...
+    ordered_cardinalities = []
+    for i in range((nAttr + 1) // 2):
+        ordered_cardinalities.append(i)
+        if nAttr - i != i:
+            ordered_cardinalities.append(nAttr - i)
+
+    deterministic_indices = []
+    for card in ordered_cardinalities:
+        for i in cardinality_to_indices[card]:
+            if len(deterministic_indices) >= num_deterministic:
+                break
+            deterministic_indices.append(i)
+        if len(deterministic_indices) >= num_deterministic:
+            break
+
+    # Seleciona aleatoriamente os índices restantes
+    remaining_indices = list(set(range(total_coalitions)) - set(deterministic_indices))
+    random_indices = random.sample(remaining_indices, num_random)
+
+    # Combina os dois conjuntos
+    selected_indices = deterministic_indices + random_indices
+    
+    return selected_indices
+
+def ordered_coalition_indices(nAttr):
+    index_by_cardinality = {k: [] for k in range(1, nAttr)}  # ignora 0 e nAttr
+    
+    idx = 0
+    for k in range(nAttr + 1):  # inclui 0 e nAttr, mas só armazena se estiver entre 1 e nAttr - 1
+        for _ in itertools.combinations(range(nAttr), k):
+            if 1 <= k < nAttr:
+                index_by_cardinality[k].append(idx)
+            idx += 1
+
+    ordered_indices = []
+    used_cardinalities = set()
+    
+    for i in range((nAttr - 1) // 2 + 1):
+        for k in [i + 1, nAttr - (i + 1)]:
+            if 1 <= k < nAttr and k not in used_cardinalities:
+                ordered_indices.extend(index_by_cardinality[k])
+                used_cardinalities.add(k)
+
+    return ordered_indices
+
+def select_indices_with_budget(nAttr, budget, seed=None):
+    if seed is not None:
+        random.seed(seed)
+
+    total_coalitions = 2 ** nAttr
+    index_by_cardinality = {k: [] for k in range(1, nAttr)}  # ignora 0 e nAttr
+
+    # Mapeia os índices por cardinalidade
+    idx = 0
+    for k in range(nAttr + 1):  # inclui 0 e nAttr para contar corretamente
+        for _ in itertools.combinations(range(nAttr), k):
+            if 1 <= k < nAttr:
+                index_by_cardinality[k].append(idx)
+            idx += 1
+
+    # Ordem determinística de cardinalidades: 1, n-1, 2, n-2, ...
+    ordered_cardinalities = []
+    for i in range((nAttr - 1) // 2 + 1):
+        for k in [i + 1, nAttr - (i + 1)]:
+            if 1 <= k < nAttr and k not in ordered_cardinalities:
+                ordered_cardinalities.append(k)
+
+    # Seleção determinística até o budget
+    deterministic_indices = []
+    for card in ordered_cardinalities:
+        for idx in index_by_cardinality[card]:
+            if len(deterministic_indices) >= budget:
+                break
+            deterministic_indices.append(idx)
+        if len(deterministic_indices) >= budget:
+            break
+
+    # Resto dos índices possíveis (exceto cardinalidade 0 e nAttr)
+    all_valid_indices = set()
+    for idx_list in index_by_cardinality.values():
+        all_valid_indices.update(idx_list)
+
+    remaining_indices = list(all_valid_indices - set(deterministic_indices))
+    random_indices = random.sample(remaining_indices, len(remaining_indices))
+
+    final_indices = deterministic_indices + random_indices
+    return final_indices
