@@ -1,1 +1,7 @@
-# k-additive-global-Shapley
+# Shapley Value Approximation Based on k-Additive Games
+
+### Authors: *Guilherme Dean Pelegrina*, *Patrick Kolpaczki*, *Eyke Hüllermeier *
+
+The Shapley value is the prevalent solution for fair division problems in which a payout is to be divided among multiple agents. By adopting a game-theoretic view, the idea of fair division and the Shapley value can also be used in machine learning to quantify the individual contribution of features or data points to the performance of a predictive model. Despite its popularity and axiomatic justification, the Shapley value suffers from a computational complexity that scales exponentially with the number of entities involved, and hence requires approximation methods for its reliable estimation. We propose \emph{SVA}$k_{\text{ADD}}$, a novel approximation method that fits a $k$-additive surrogate game. By taking advantage of $k$-additivity, we are able to elicit the exact Shapley values of the surrogate game and then use these values as estimates for the original fair division problem. The efficacy of our method is evaluated empirically and compared to competing methods.
+
+Link to the paper: https://arxiv.org/abs/2502.04763
